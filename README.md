@@ -197,3 +197,4 @@ Possible future improvements include:
 ## 11. Conclusion
 
 This project implements the core functionality of a URL shortening service using a REST API and persistent relational storage. It demonstrates URL validation, short-code generation, database operations, HTTP redirects, error handling, and automated testing.
+
