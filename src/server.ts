@@ -1,16 +1,22 @@
-
 import express, { Request, Response, NextFunction } from "express";
 import { PrismaClient, Prisma } from "@prisma/client";
+import * as path from "node:path";
 import { randomInt } from "node:crypto";
+import "dotenv/config";
 
 const app = express();
+app.set("trust proxy", 1);
+
 const prisma = new PrismaClient();
-const PORT = 3000;
+const PORT = Number(process.env.PORT ?? 3000);
 
 const alphabet =
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 app.use(express.json({ limit: "10kb" }));
+
+// Serve the dashboard HTML, CSS, and JavaScript.
+app.use(express.static(path.join(__dirname, "../public")));
 
 // Generate an 8-character random Base62 code.
 function generateShortCode(): string {
@@ -41,20 +47,31 @@ function isValidUrl(value: unknown): value is string {
   }
 }
 
-// Health check.
-app.get("/", (_req: Request, res: Response) => {
+// Build a short URL using the configured public address,
+// or the current request address when BASE_URL is not set.
+function getShortUrl(req: Request, shortCode: string): string {
+  const configuredBaseUrl = process.env.BASE_URL?.replace(/\/+$/, "");
+
+  const baseUrl =
+    configuredBaseUrl || `${req.protocol}://${req.get("host")}`;
+
+  return `${baseUrl}/${shortCode}`;
+}
+
+// API health check.
+app.get("/api/health", (_req: Request, res: Response) => {
   res.json({ message: "URL Shortener API is running" });
 });
 
- // Retrieve details about a shortened URL.
+// Retrieve details about a shortened URL.
 app.get(
   "/api/urls/:shortCode",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const record = await prisma.url.findUnique({
         where: {
-  shortCode: String(req.params.shortCode),
-},
+          shortCode: String(req.params.shortCode),
+        },
       });
 
       if (!record) {
@@ -70,7 +87,7 @@ app.get(
         id: record.id,
         originalUrl: record.originalUrl,
         shortCode: record.shortCode,
-        shortUrl: `http://localhost:${PORT}/${record.shortCode}`,
+        shortUrl: getShortUrl(req, record.shortCode),
         createdAt: record.createdAt,
       });
     } catch (error) {
@@ -107,7 +124,7 @@ app.post(
             id: record.id,
             originalUrl: record.originalUrl,
             shortCode: record.shortCode,
-            shortUrl: `http://localhost:${PORT}/${record.shortCode}`,
+            shortUrl: getShortUrl(req, record.shortCode),
             createdAt: record.createdAt,
           });
         } catch (error) {
@@ -136,28 +153,31 @@ app.post(
 );
 
 // Redirect to the original URL.
-app.get("/:shortCode", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const record = await prisma.url.findUnique({
-      where: {
-  shortCode: String(req.params.shortCode),
-},
-    });
-
-    if (!record) {
-      return res.status(404).json({
-        error: {
-          code: "URL_NOT_FOUND",
-          message: "No shortened URL exists for this code.",
+app.get(
+  "/:shortCode",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const record = await prisma.url.findUnique({
+        where: {
+          shortCode: String(req.params.shortCode),
         },
       });
-    }
 
-    return res.redirect(302, record.originalUrl);
-  } catch (error) {
-    next(error);
+      if (!record) {
+        return res.status(404).json({
+          error: {
+            code: "URL_NOT_FOUND",
+            message: "No shortened URL exists for this code.",
+          },
+        });
+      }
+
+      return res.redirect(302, record.originalUrl);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 // Consistent JSON error handling.
 app.use(
@@ -200,12 +220,13 @@ app.use(
   }
 );
 
+// Connect to PostgreSQL and start the server.
 async function startServer() {
   try {
     await prisma.$connect();
 
     app.listen(PORT, () => {
-      console.log(`URL Shortener API running at http://localhost:${PORT}`);
+      console.log(`URL Shortener running on port ${PORT}`);
     });
   } catch (error) {
     console.error("Could not connect to the database:", error);

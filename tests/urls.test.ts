@@ -9,7 +9,7 @@ describe("URL Shortener API", () => {
   });
 
   it("should return a health-check message", async () => {
-    const response = await request(app).get("/");
+    const response = await request(app).get("/api/health");
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe(

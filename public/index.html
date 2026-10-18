@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create and share short URLs easily.">
+  <title>LinkLite | URL Shortener</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/script.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-icon">↗</span>
+      <span>LinkLite</span>
+    </a>
+    <span class="header-label">URL SHORTENER</span>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <span class="eyebrow">SIMPLE. FAST. SHAREABLE.</span>
+      <h1>Long links.<br><span>Shorter stories.</span></h1>
+      <p>Turn long URLs into clean, shareable links in seconds.</p>
+    </section>
+
+    <section class="shortener-card">
+      <form id="shorten-form">
+        <label for="originalUrl">Paste your long URL</label>
+        <div class="input-wrap">
+          <span aria-hidden="true">↗</span>
+          <input
+            type="url"
+            id="originalUrl"
+            name="originalUrl"
+            placeholder="https://example.com/your-long-link"
+            required
+          >
+        </div>
+        <button type="submit" id="shorten-button">
+          <span id="button-text">Shorten URL</span>
+          <span aria-hidden="true"> →</span>
+        </button>
+      </form>
+
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+
+      <section id="result" class="result" hidden>
+        <div class="result-heading">
+          <span class="success-icon">✓</span>
+          <div>
+            <h2>Your link is ready!</h2>
+            <p>Copy it and share it with anyone.</p>
+          </div>
+        </div>
+
+        <label for="shortUrl">Your shortened URL</label>
+        <div class="result-link">
+          <a id="shortUrl" href="#" target="_blank" rel="noopener noreferrer"></a>
+          <button type="button" id="copy-button" class="copy-button">
+            Copy
+          </button>
+        </div>
+
+        <div class="original-preview">
+          <span>Original URL</span>
+          <p id="original-preview"></p>
+        </div>
+
+        <a id="open-link" class="open-link" href="#" target="_blank"
+           rel="noopener noreferrer">Open shortened link ↗</a>
+      </section>
+    </section>
+
+    <section class="features">
+      <article class="feature">
+        <span class="feature-icon">⚡</span>
+        <h3>Quick and easy</h3>
+        <p>Create short links with just one click.</p>
+      </article>
+      <article class="feature">
+        <span class="feature-icon">🔗</span>
+        <h3>Easy to share</h3>
+        <p>Send your links to friends anywhere.</p>
+      </article>
+      <article class="feature">
+        <span class="feature-icon">✓</span>
+        <h3>Reliable links</h3>
+        <p>Your links are saved in the database.</p>
+      </article>
+    </section>
+
+    <footer>
+      <p>LinkLite · A simple URL shortener project</p>
+    </footer>
+  </main>
+</body>
+</html>
